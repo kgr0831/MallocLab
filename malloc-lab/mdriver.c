@@ -9,6 +9,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
@@ -33,7 +34,7 @@ extern char *optarg; // Added declaration for optarg
 #define LINENUM(i) (i + 5) /* cnvt trace request nums to linenums (origin 1) */
 
 /* Returns true if p is ALIGNMENT-byte aligned */
-#define IS_ALIGNED(p) ((((unsigned int)(p)) % ALIGNMENT) == 0)
+#define IS_ALIGNED(p) ((((uintptr_t)(p)) % ALIGNMENT) == 0)
 
 /******************************
  * The key compound data types
@@ -530,7 +531,7 @@ static trace_t *read_trace(char *tracedir, char *filename)
 	strcat(path, filename);
 	if ((tracefile = fopen(path, "r")) == NULL)
 	{
-		sprintf(msg, "Could not open %s in read_trace", path);
+		snprintf(msg, sizeof(msg), "Could not open %s in read_trace", path);
 		unix_error(msg);
 	}
 	fscanf(tracefile, "%d", &(trace->sugg_heapsize)); /* not used */

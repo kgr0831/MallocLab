@@ -76,6 +76,7 @@ static char* heapEndPos = NULL;
 /*
  * mm_init - initialize the malloc package.
  */
+
 int mm_init(void)
 {
     mem_sbrk(WSIZE * 4); // 16byte 시작 (CSAPP 권장)
