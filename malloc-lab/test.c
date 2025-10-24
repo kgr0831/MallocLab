@@ -22,7 +22,7 @@ int heapSizeUp(size_t inc) // 메모리의 크기는 int가 아닌 size_t로 해
     char *pos = mem_sbrk((int)inc); // 확장한거 시작위치
     // char가 1바이트라 바이트 단위 주소 연산 가능하고, void*는 연산이 불가능함, 
     // 또한 어떤 객체든 다 char*로 접근 가능
-    if (pos == (void*)-1) return -1; // 힙 확장 실패
+    if (pos == (void*)-1) return -1; // 힙 확장 실패시 -1 반환
 
     if (!start) start = pos;
     end = pos + inc;
