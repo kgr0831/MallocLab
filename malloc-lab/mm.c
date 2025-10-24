@@ -26,6 +26,10 @@
 
 /* size와 alloc bit을 하나의 워드로 묶음 */
 #define PACK(size, alloc)  ((size) | (alloc))
+// size -> 크기
+// alloc -> allocated bit(할당여부 비트)
+// 0x10 | 0x0 -> 0x10
+// 0x10 | 0x1 -> 0x11
 
 /* 주소 p가 가리키는 워드 읽기/쓰기 */
 #define GET(p)       (*(unsigned int *)(p))
@@ -77,11 +81,20 @@ static char* heapEndPos = NULL;
  * mm_init - initialize the malloc package.
  */
 
+
+
 int mm_init(void)
 {
     mem_sbrk(WSIZE * 4); // 16byte 시작 (CSAPP 권장)
     heapStartPos = mem_heap_lo(); // 시작 바이트 주소
+    mem_sbrk(WSIZE * 1024);
     heapEndPos = mem_heap_hi(); // 끝나는 바이트 주소
+
+    char *cur = heapStartPos + (DSIZE * 2);
+    while (cur < heapEndPos) {
+
+        cur += DSIZE;
+    }
     PUT(heap_listp, 0); // put = 4바이트 할당 -> 패딩으로 0 설정해서 채움.
     // 패딩 = 시작점을 나타내주면서 이 뒤로는 8바이트로 정렬해야함을 표시
     PUT(heap_listp + WSIZE, PACK(DSIZE, 1)); // 프롤로그 헤더에 정보 입력 -> 8바이트 크기(=DSIZE) 블록을 사용 중(=1)
@@ -105,18 +118,20 @@ int mm_init(void)
  * mm_malloc - Allocate a block by incrementing the brk pointer.
  *     Always allocate a block whose size is a multiple of the alignment.
  */
+
 void *mm_malloc(size_t size)
 {
-    int newsize = ALIGN(size + SIZE_T_SIZE);
-    void *p = mem_sbrk(newsize);
-    if (p == (void *)-1)
+    int newsize = ALIGN(size + SIZE_T_SIZE); // 8바이트 배수로 정렬
+    void *p = mem_sbrk(newsize); // 힙의 크기를 newsize 만큼 확장
+    if (p == (void *)-1) // 만약 확장 실패시
     {
-        return NULL;
+        return NULL; // NULL 반환
     }
     else
     {
-        *(size_t *)p = size;
-        return (void *)((char *)p + SIZE_T_SIZE);
+        *(size_t*)p = size;
+        // 사용자가 요청한 크기를 할당된 블록의 맨 앞 8바이트인 헤더에 채움.
+        return (void *)((char *)p + SIZE_T_SIZE); // 사용자에게 준 블록의 payloads 까지
     }
 }
 
@@ -132,17 +147,19 @@ void mm_free(void *ptr)
  */
 void *mm_realloc(void *ptr, size_t size)
 {
-    void *oldptr = ptr;
-    void *newptr;
-    size_t copySize;
+    // 1. 사용자가 원하는 크기를 받는다. 2. 그 크기가 남은 힙의 크기 보다 작으면 그냥 할당해주고 크기를 나타내주는 변수를 줄인다. -> 할당은 원하는 크기 + a(패딩)를 통해 8의 배수가 크기인 하나의 블록으로 해준다. 3. 만약에 힙의 크기가 요청 크기보다 작으면 힙의 크기를 늘려주며 기존 에필로그 헤더를 Put()을 통해 뒤로 당겨주고 크기를 나타내주는 변수에 늘린 크기만큼 더해준다음에 할당해주고 크기를 나타내주는 변수를 줄인다. -> 할당은 원하는 크기 + a(패딩)를 통해 8의 배수가 크기인 하나의 블록으로 해준다.
+    // void *oldptr = ptr;
+    // void *newptr;
+    // size_t copySize;
 
-    newptr = mm_malloc(size);
-    if (newptr == NULL)
-        return NULL;
-    copySize = *(size_t *)((char *)oldptr - SIZE_T_SIZE);
-    if (size < copySize)
-        copySize = size;
-    memcpy(newptr, oldptr, copySize);
-    mm_free(oldptr);
-    return newptr;
+    // newptr = mm_malloc(size);
+    // if (newptr == NULL)
+    //     return NULL;
+    // copySize = *(size_t *)((char *)oldptr - SIZE_T_SIZE);
+    // if (size < copySize)
+    //     copySize = size;
+    // memcpy(newptr, oldptr, copySize);
+    // mm_free(oldptr);
+    // return newptr;
 }
+
