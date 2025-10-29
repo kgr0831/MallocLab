@@ -71,7 +71,8 @@ static char *heap_listp = 0;
 /** 
  * @brief 팀 정보 구조체 (malloc lab 제출용)
  */
-team_t team = {
+team_t team = 
+{
     "teamFive",               /**< 팀 이름 */
     "GaramKim",               /**< 팀원 이름 */
     "kimgalam0831@gmail.com", /**< 팀원 이메일 */
